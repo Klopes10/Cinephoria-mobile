@@ -11,6 +11,7 @@ void main() async {
   runApp(const CinephoriaApp());
 }
 
+
 class CinephoriaApp extends StatelessWidget {
   const CinephoriaApp({super.key});
   @override
