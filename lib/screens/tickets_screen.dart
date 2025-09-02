@@ -16,7 +16,14 @@ class TicketsScreen extends StatefulWidget {
 
 class _TicketsScreenState extends State<TicketsScreen> {
   late Future<List<Map<String, dynamic>>> _future;
-  late AuthStore _auth; // utilise le même ApiClient que l'app
+  late AuthStore _auth;
+
+  // Palette cohérente avec l'écran login
+  final Color _bg = const Color(0xFF0E0E0E);
+  final Color _fg = const Color(0xFFEDEDED);
+  final Color _muted = const Color(0xFF9E9E9E);
+  final Color _accent = const Color(0xFFF39C12);
+  final Color _card = const Color(0xFF171717);
 
   @override
   void initState() {
@@ -38,7 +45,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
     await _auth.logout();
     if (!mounted) return;
     if (message != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(behavior: SnackBarBehavior.floating, content: Text(message)),
+      );
     }
     Navigator.pushAndRemoveUntil(
       context,
@@ -49,47 +58,55 @@ class _TicketsScreenState extends State<TicketsScreen> {
 
   Future<void> _logout() => _forceLogin("Déconnecté.");
 
-  /// Rend l’URL d’affiche utilisable dans l’émulateur :
-  /// - remplace localhost -> 10.0.2.2
-  /// - construit une URL absolue si on reçoit un chemin relatif
+  // URL affiche -> utilisable par l'émulateur
   String fixUrl(String url) {
-  if (url.isEmpty) return url;
-
-  // Base de l’API côté émulateur (ex: http://10.0.2.2:8080)
-  final base = AppConfig.baseUrl;
-  final b = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
-
-  // 1) Si l’API renvoie une URL en localhost → remplace host/port par base
-  url = url.replaceFirst('http://localhost:8080', b);
-
-  // 2) Si c’est un chemin relatif (/uploads/... ou uploads/...), fabrique l’URL absolue
-  if (!url.startsWith('http')) {
-    final p = url.startsWith('/') ? url.substring(1) : url;
-    return '$b/$p';
+    if (url.isEmpty) return url;
+    final base = AppConfig.baseUrl;
+    final b = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
+    url = url.replaceFirst('http://localhost:8080', b);
+    if (!url.startsWith('http')) {
+      final p = url.startsWith('/') ? url.substring(1) : url;
+      return '$b/$p';
+    }
+    return url;
   }
-
-  return url;
-}
-
 
   @override
   Widget build(BuildContext context) {
-    // NB: pense à avoir appelé initializeDateFormatting('fr_FR') dans main()
     final dayFmt = DateFormat('EEE d MMM', 'fr_FR');
 
     return Scaffold(
+      backgroundColor: _bg,
       appBar: AppBar(
-        title: const Text('Mes billets'),
+        backgroundColor: _bg,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          'Mes billets',
+          style: TextStyle(color: _fg, fontWeight: FontWeight.w600),
+        ),
         actions: [
-          IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)),
-          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
+          IconButton(
+            tooltip: 'Rafraîchir',
+            onPressed: _refresh,
+            icon: const Icon(Icons.refresh),
+            color: _fg,
+          ),
+          IconButton(
+            tooltip: 'Déconnexion',
+            onPressed: _logout,
+            icon: const Icon(Icons.logout),
+            color: _fg,
+          ),
         ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: _accent),
+            );
           }
 
           if (snap.hasError) {
@@ -98,21 +115,29 @@ class _TicketsScreenState extends State<TicketsScreen> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _forceLogin("Session expirée. Merci de vous reconnecter.");
               });
-              return const Center(child: Text('Session expirée…'));
+              return Center(
+                child: Text('Session expirée…', style: TextStyle(color: _muted)),
+              );
             }
-            return Center(child: Text('Erreur: $msg'));
+            return Center(
+              child: Text('Erreur: $msg', style: TextStyle(color: _muted)),
+            );
           }
 
           final tickets = snap.data ?? [];
           if (tickets.isEmpty) {
-            return const Center(child: Text('Aucun billet à venir.'));
+            return Center(
+              child: Text('Aucun billet à venir.', style: TextStyle(color: _muted)),
+            );
           }
 
           return RefreshIndicator(
+            color: _accent,
+            backgroundColor: _card,
             onRefresh: _refresh,
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
               itemCount: tickets.length,
               itemBuilder: (context, i) {
                 final t = tickets[i];
@@ -123,10 +148,9 @@ class _TicketsScreenState extends State<TicketsScreen> {
                 final salle      = (t['salle'] ?? '').toString();
                 final seats      = (t['seats'] as List?)?.cast<String>() ?? [];
 
-                // On s’appuie sur jour + heureDebut/heureFin pour éviter les décalages de fuseau
-                final jour = (t['jour'] ?? '').toString();         // "2025-09-05"
-                final hDeb = (t['heureDebut'] ?? '').toString();   // "20:00:00"
-                final hFin = (t['heureFin'] ?? '').toString();     // "22:00:00"
+                final jour = (t['jour'] ?? '').toString();
+                final hDeb = (t['heureDebut'] ?? '').toString();
+                final hFin = (t['heureFin'] ?? '').toString();
 
                 String dayLabel = jour;
                 try {
@@ -144,51 +168,22 @@ class _TicketsScreenState extends State<TicketsScreen> {
                     ) ??
                     0;
 
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    leading: affiche.isNotEmpty
-    ? ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: Image.network(
-          affiche,
-          width: 60,
-          height: 120,                // <— hauteur explicite
-          fit: BoxFit.cover,
-          cacheWidth: 120,           // <— downscale côté décodage (plus robuste)
-          errorBuilder: (ctx, err, st) {
-            debugPrint('IMG ERROR: $affiche -> $err');
-            return const Icon(Icons.movie, size: 60);
-          },
-          loadingBuilder: (ctx, child, progress) {
-            if (progress == null) return child;
-            return const SizedBox(
-              width: 60,
-              height: 90,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            );
-          },
-        ),
-      )
-    : const Icon(Icons.movie, size: 40),
-
-                    title: Text(
-                      film,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ex: "ven. 5 sept.  (20:00 – 22:00)"
-                        Text(
-                          '$dayLabel  (${hDebShort.isNotEmpty ? hDebShort : "—"} – ${hFinShort.isNotEmpty ? hFinShort : "—"})',
-                        ),
-                        Text('Salle: ${salle.isNotEmpty ? salle : "—"}'),
-                        if (seats.isNotEmpty) Text('Sièges: ${seats.join(', ')}'),
-                      ],
-                    ),
-                    trailing: const Icon(Icons.qr_code),
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: _card,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12, width: 1),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black54,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
                     onTap: () async {
                       try {
                         final qr = await widget.api.fetchQrData(resId);
@@ -206,12 +201,115 @@ class _TicketsScreenState extends State<TicketsScreen> {
                         } else {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Erreur QR: $msg')),
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                content: Text('Erreur QR: $msg'),
+                              ),
                             );
                           }
                         }
                       }
                     },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Affiche
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: affiche.isNotEmpty
+                                ? Image.network(
+                                    affiche,
+                                    width: 64,
+                                    height: 96,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: 160,
+                                    errorBuilder: (ctx, err, st) {
+                                      debugPrint('IMG ERROR: $affiche -> $err');
+                                      return Container(
+                                        width: 64,
+                                        height: 96,
+                                        color: Colors.white10,
+                                        child: const Icon(Icons.movie, size: 28, color: Colors.white70),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    width: 64,
+                                    height: 96,
+                                    color: Colors.white10,
+                                    child: const Icon(Icons.movie, size: 28, color: Colors.white70),
+                                  ),
+                          ),
+                          const SizedBox(width: 12),
+
+                          // Texte
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Titre
+                                Text(
+                                  film,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: _fg,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+
+                                // Date + heures
+                                Row(
+                                  children: [
+                                    Icon(Icons.event, size: 16, color: _muted),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '$dayLabel  (${hDebShort.isNotEmpty ? hDebShort : "—"} – ${hFinShort.isNotEmpty ? hFinShort : "—"})',
+                                      style: TextStyle(color: _muted),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+
+                                // Salle
+                                Row(
+                                  children: [
+                                    Icon(Icons.meeting_room, size: 16, color: _muted),
+                                    const SizedBox(width: 6),
+                                    Text('Salle: ${salle.isNotEmpty ? salle : "—"}',
+                                        style: TextStyle(color: _muted)),
+                                  ],
+                                ),
+                                if (seats.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(Icons.event_seat, size: 16, color: _muted),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          'Sièges: ${seats.join(', ')}',
+                                          style: TextStyle(color: _muted),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+
+                          // QR
+                          const SizedBox(width: 8),
+                          Icon(Icons.qr_code, color: _fg),
+                        ],
+                      ),
+                    ),
                   ),
                 );
               },
