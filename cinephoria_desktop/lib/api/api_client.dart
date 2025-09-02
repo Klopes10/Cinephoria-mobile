@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config.dart';
-import 'dart:async';
 
 class ApiClient {
   ApiClient({http.Client? httpClient}) : _http = httpClient ?? http.Client();
@@ -13,7 +13,7 @@ class ApiClient {
 
   Uri _u(String path) => Uri.parse('${AppConfig.baseUrl}$path');
 
-  // --- AUTH ---
+  // ---------- AUTH ----------
   Future<String> login(String email, String password) async {
     try {
       final res = await _http
@@ -22,7 +22,7 @@ class ApiClient {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'email': email, 'password': password}),
           )
-          .timeout(const Duration(seconds: 8));
+          .timeout(const Duration(seconds: 30));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -34,7 +34,7 @@ class ApiClient {
         throw Exception('Réponse login sans token.');
       }
 
-      // erreur lisible si possible
+      // Message d’erreur lisible si possible
       try {
         final err = jsonDecode(res.body);
         final msg = (err['message'] ?? err['error'] ?? res.body).toString();
@@ -56,11 +56,11 @@ class ApiClient {
   Map<String, String> get _authHeaders =>
       {'Authorization': 'Bearer ${_token ?? ''}'};
 
-  // --- EXEMPLES QUI SERVIRONT ENSUITE (salles/incidents) ---
+  // ---------- SALLES ----------
   Future<List<Map<String, dynamic>>> fetchSalles() async {
     final r = await _http
         .get(_u('/api/salles'), headers: _authHeaders)
-        .timeout(const Duration(seconds: 8));
+        .timeout(const Duration(seconds: 30));
     if (r.statusCode == 200) {
       final list = jsonDecode(r.body) as List<dynamic>;
       return list.cast<Map<String, dynamic>>();
@@ -69,6 +69,7 @@ class ApiClient {
     throw Exception('Erreur salles (${r.statusCode})');
   }
 
+  // ---------- INCIDENTS ----------
   Future<List<Map<String, dynamic>>> fetchIncidentsBySalle(int salleId) async {
     final r = await _http
         .get(_u('/api/salles/$salleId/incidents'), headers: _authHeaders)
@@ -83,8 +84,7 @@ class ApiClient {
 
   Future<void> createIncident({
     required int salleId,
-    required String type,
-    String? siege,
+    required String titre,
     required String description,
   }) async {
     final r = await _http
@@ -96,14 +96,15 @@ class ApiClient {
           },
           body: jsonEncode({
             'salleId': salleId,
-            'type': type,
-            'siege': siege,
+            'titre': titre,
             'description': description,
           }),
         )
-        .timeout(const Duration(seconds: 8));
+        .timeout(const Duration(seconds: 30));
+
     if (r.statusCode == 201) return;
     if (r.statusCode == 401) throw Exception('SESSION_EXPIRED');
+
     try {
       final err = jsonDecode(r.body);
       final msg = (err['message'] ?? err['error'] ?? r.body).toString();
