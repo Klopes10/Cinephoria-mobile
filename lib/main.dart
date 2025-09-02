@@ -18,6 +18,7 @@ class CinephoriaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cinéphoria Mobile',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
       home: const BootScreen(),
     );
