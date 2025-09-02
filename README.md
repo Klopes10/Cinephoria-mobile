@@ -1,2 +1,2 @@
-# Cinephoria-mobile
-application mobile du projet Cinephoria
+# Cinephoria-mobile-desktop
+application mobile et desktop du projet Cinephoria
