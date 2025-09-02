@@ -196,6 +196,19 @@ class _IncidentFormDialogState extends State<_IncidentFormDialog> {
   final _desc  = TextEditingController();
   bool _sending = false;
 
+  InputDecoration _decoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      enabledBorder: const UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white70),
+      ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: widget.accent), // tu peux mettre _accent si tu veux garder l’orange
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -211,13 +224,14 @@ class _IncidentFormDialogState extends State<_IncidentFormDialog> {
             const SizedBox(height: 8),
             TextField(
               controller: _titre,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Titre (ex: Siège cassé rang C)'),
+              style: const TextStyle(color: Colors.white), // texte blanc
+              decoration: _decoration('Titre (ex: Siège cassé rang C)'),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _desc,
-              decoration: const InputDecoration(labelText: 'Description'),
+              style: const TextStyle(color: Colors.white), // texte blanc
+              decoration: _decoration('Description'),
               maxLines: 4,
             ),
           ],
@@ -226,7 +240,7 @@ class _IncidentFormDialogState extends State<_IncidentFormDialog> {
       actions: [
         TextButton(
           onPressed: _sending ? null : () => Navigator.pop(context),
-          child: const Text('Annuler'),
+          child: const Text('Annuler', style: TextStyle(color: Colors.white70)),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
@@ -248,3 +262,4 @@ class _IncidentFormDialogState extends State<_IncidentFormDialog> {
     );
   }
 }
+
