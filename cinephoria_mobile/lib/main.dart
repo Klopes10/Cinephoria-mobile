@@ -7,10 +7,9 @@ import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('fr_FR', null); // <-- important
+  await initializeDateFormatting('fr_FR', null);
   runApp(const CinephoriaApp());
 }
-
 
 class CinephoriaApp extends StatelessWidget {
   const CinephoriaApp({super.key});
@@ -44,14 +43,19 @@ class _BootScreenState extends State<BootScreen> {
   Future<void> _init() async {
     await _auth.init();
     if (!mounted) return;
-    // petit ping sécurisé pour valider le token
     try {
       await _api.fetchMyUpcomingTickets();
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TicketsScreen(api: _api)));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => TicketsScreen(api: _api)),
+      );
     } catch (_) {
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => LoginScreen(api: _api)), // <-- FIX
+      );
     }
   }
 

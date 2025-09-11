@@ -46,12 +46,15 @@ class _TicketsScreenState extends State<TicketsScreen> {
     if (!mounted) return;
     if (message != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(behavior: SnackBarBehavior.floating, content: Text(message)),
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(message),
+        ),
       );
     }
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => LoginScreen(api: widget.api)), // <-- FIX ICI
       (_) => false,
     );
   }

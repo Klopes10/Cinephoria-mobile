@@ -6,8 +6,8 @@ import '../auth/auth_store.dart';
 import 'login_screen.dart';
 
 class SallesScreen extends StatefulWidget {
-  const SallesScreen({super.key, required this.api});
   final ApiClient api;
+  const SallesScreen({super.key, required this.api});
 
   @override
   State<SallesScreen> createState() => _SallesScreenState();
@@ -196,8 +196,7 @@ class _SallesScreenState extends State<SallesScreen> {
                               ),
                               child: Text(
                                 '${sallesDuCinema.length} salle${sallesDuCinema.length > 1 ? 's' : ''}',
-                                style:
-                                    TextStyle(color: _muted, fontSize: 12),
+                                style: TextStyle(color: _muted, fontSize: 12),
                               ),
                             ),
                           ],
@@ -210,11 +209,9 @@ class _SallesScreenState extends State<SallesScreen> {
                       Column(
                         children: List.generate(sallesDuCinema.length, (idx) {
                           final s = sallesDuCinema[idx];
-                          final id = int.tryParse(
-                                  (s['id'] ?? '0').toString()) ??
-                              0;
-                          final nom = (s['nom'] ?? s['name'] ?? 'Salle')
-                              .toString();
+                          final id = int.tryParse((s['id'] ?? '0').toString()) ?? 0;
+                          final nom =
+                              (s['nom'] ?? s['name'] ?? 'Salle').toString();
 
                           return Padding(
                             padding: EdgeInsets.fromLTRB(
@@ -255,8 +252,7 @@ class _SallesScreenState extends State<SallesScreen> {
                                               fontWeight: FontWeight.w600),
                                         ),
                                       ),
-                                      Icon(Icons.chevron_right,
-                                          color: _accent),
+                                      Icon(Icons.chevron_right, color: _accent),
                                     ],
                                   ),
                                 ),
