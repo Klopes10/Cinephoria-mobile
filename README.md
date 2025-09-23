@@ -57,7 +57,7 @@ L’application démarre automatiquement : connectez-vous avec vos **identifiant
 
 ### 🔗 Lien de téléchargement
 
-➡️ [Télécharger l'application Cinéphoria Mobile (APK Android)]((https://github.com/Klopes10/Cinephoria-mobile/releases/tag/v1.0.0-mobile))  
+➡️ [Télécharger l'application Cinéphoria Mobile (APK Android)](https://github.com/Klopes10/Cinephoria-mobile/releases/tag/v1.0.0-mobile)  
 
 ### 🧾 Étapes d’installation (Mobile)
 
