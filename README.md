@@ -8,7 +8,7 @@ La partie desktop est destiné aux **employés du cinéma** pour la **gestion de
 ## 🖥️ Fonctionnalités du module Desktop
 
 - Connexion sécurisée via identifiants employés  
-- Tableau de suivi des incidents par salle  
+- Suivi des incidents par salle  
 - Ajout d’un incident   
 - Filtrage des salles par cinéma
 
@@ -19,7 +19,7 @@ L’application desktop & mobile utilisent la même base de données (backend) q
 ## 📂 Chemin du dépôt
 
 Le code est dans ce repository GitHub :  
-[Klopes10 / Cinephoria-mobile](https://github.com/Klopes10/Cinephoria-mobile/tree/master) 
+[Klopes10 / Cinephoria-mobile](https://github.com/Klopes10/Cinephoria-mobile/) 
 
 La structure comprend notamment deux dossiers :
 
